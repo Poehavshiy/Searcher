@@ -31,6 +31,7 @@ Shape_Finder::Shape_Finder(Mat &circle_image, Mat &triangle_image, Mat &cross_im
     sample_shapes.insert(pair<SHAPE_TYPE, Shape>(SHAPE_TYPE::CIRCLE, circle));
     sample_shapes.insert(pair<SHAPE_TYPE, Shape>(SHAPE_TYPE::TRIANGLE, triangle));
     sample_shapes.insert(pair<SHAPE_TYPE, Shape>(SHAPE_TYPE::CROSS, cross));
+    ideal_shapes = sample_shapes;
 
 }
 
@@ -47,8 +48,18 @@ std::map<SHAPE_TYPE, Shape> Shape_Finder::find_primitives(Mat &target_image) {
     return define_shapes(all_shapes);
 }
 
+//closest type to shape
 pair<SHAPE_TYPE, double> Shape_Finder::closest_shape(Shape &shape) {
-
+    double min = shape_difference(sample_shapes[SHAPE_TYPE ::CIRCLE], shape);
+    pair<SHAPE_TYPE, double> result;
+    for(auto it = sample_shapes.begin(); it != sample_shapes.end(); ++it){
+        double cur_min = shape_difference(it -> second, shape);
+        if(cur_min < min){
+            min = cur_min;
+            result = pair<SHAPE_TYPE, double>(it->first, min);
+        }
+    }
+    return result;
 }
 
 std::map<SHAPE_TYPE, Shape> Shape_Finder::define_shapes(vector<Shape> &all_shapes) {
@@ -56,11 +67,13 @@ std::map<SHAPE_TYPE, Shape> Shape_Finder::define_shapes(vector<Shape> &all_shape
     int size = all_shapes.size();
     switch (size) {
         case (0):
+            cout<<"0 shape"<<endl;
             break;
         case (1) : {
             //pair<SHAPE_TYPE, double> closest = closest_shape(all_shapes[0]);
             //sample_shapes[closest.first] = all_shapes[0];
             result.insert(std::pair<SHAPE_TYPE, Shape>(SHAPE_TYPE::INTERSECTION, all_shapes[0]));
+            cout<<"1 shape"<<endl;
             break;
         }
         case (2) : {
@@ -76,34 +89,58 @@ std::map<SHAPE_TYPE, Shape> Shape_Finder::define_shapes(vector<Shape> &all_shape
             }
             sample_shapes[true_shape.first] = all_shapes[true_id];
             //return properly founded
-            result.insert(std::pair<SHAPE_TYPE, Shape>(true_shape.first, all_shapes[true_id]));
+            std::pair<SHAPE_TYPE, Shape> test (true_shape.first, all_shapes[true_id]) ;
+            result.insert(test);
             //and INTERSECTION
-            result.insert(std::pair<SHAPE_TYPE, Shape>(SHAPE_TYPE::INTERSECTION, all_shapes[intersection_id]));
+            test = std::pair<SHAPE_TYPE, Shape>(SHAPE_TYPE::INTERSECTION, all_shapes[intersection_id]);
+            result.insert(test);
+            cout<<"2 shape"<<endl;
             break;
         }
         case (3): {
-            vector<vector<pair<bool, double>>> difs;
-            fill_diffs(difs, all_shapes);
-            pair<int, int> first_shape_id = min_diff(difs);
-            delete_cross(difs, first_shape_id);
-            pair<int, int> second_shape_id = min_diff(difs);
-            delete_cross(difs, second_shape_id);
-            pair<int, int> third_shape_id = min_diff(difs);
-            //
-            SHAPE_TYPE first_type = cast_shape_from_int(first_shape_id.first);
-            SHAPE_TYPE second_type = cast_shape_from_int(second_shape_id.first);
-            SHAPE_TYPE third_type = cast_shape_from_int(third_shape_id.first);
-            //
-            sample_shapes[first_type] = all_shapes[first_shape_id.second];
-            sample_shapes[second_type] = all_shapes[second_shape_id.second];
-            sample_shapes[third_type] = all_shapes[third_shape_id.second];
+            if(big_difference()){
+                sample_shapes = ideal_shapes;
+            }
+            calculate_case3(all_shapes);
+            if(!first_defined){
+                ideal_shapes = sample_shapes;
+                first_defined = true;
+            }
             result = sample_shapes;
+            cout<<"3 shape"<<endl;
             break;
         }
         default:
+            cout<<size<<" shape"<<endl;
             break;
     }
     return result;
+}
+
+bool Shape_Finder::big_difference(){
+    for(auto it = ideal_shapes.begin(); it != ideal_shapes.end(); ++it){
+        pair<SHAPE_TYPE, double> closest = closest_shape(it -> second);
+        if(closest.first != it->first) return true;
+    }
+    return false;
+}
+
+void Shape_Finder::calculate_case3(vector<Shape> &all_shapes){
+    vector<vector<pair<bool, double>>> difs(all_shapes.size());
+    fill_diffs(difs, all_shapes);
+    pair<int, int> first_shape_id = min_diff(difs);
+    delete_cross(difs, first_shape_id);
+    pair<int, int> second_shape_id = min_diff(difs);
+    delete_cross(difs, second_shape_id);
+    pair<int, int> third_shape_id = min_diff(difs);
+    //
+    SHAPE_TYPE first_type = cast_shape_from_int(first_shape_id.first);
+    SHAPE_TYPE second_type = cast_shape_from_int(second_shape_id.first);
+    SHAPE_TYPE third_type = cast_shape_from_int(third_shape_id.first);
+    //
+    sample_shapes[first_type] = all_shapes[first_shape_id.second];
+    sample_shapes[second_type] = all_shapes[second_shape_id.second];
+    sample_shapes[third_type] = all_shapes[third_shape_id.second];
 }
 
 

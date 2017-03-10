@@ -25,13 +25,15 @@ struct Shape{
 
 class Shape_Finder {
     std::map<SHAPE_TYPE, Shape> sample_shapes;
-    vector<pair<SHAPE_TYPE, Point2f>> defined_centers;
+    std::map<SHAPE_TYPE, Shape> ideal_shapes;
+    bool first_defined = false;
     vector<Vec4i> hierarchy;
     std::map<SHAPE_TYPE, Shape> define_shapes(vector<Shape>& all_shapes);
     pair<SHAPE_TYPE, double> closest_shape(Shape& shape);
     double shape_difference(Shape& first, Shape& second);
     double distance_humoments(vector<double>& first,vector<double>& second);
-
+    void calculate_case3(vector<Shape> &all_shapes);
+    bool big_difference();
     pair<int, int> min_diff(vector<vector<pair<bool, double>>> &diffs);
     void delete_cross(vector<vector<pair<bool, double>>>& diffs,pair<int, int>& index);
     SHAPE_TYPE cast_shape_from_int(int n);
