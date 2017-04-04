@@ -101,11 +101,11 @@ std::map<SHAPE_TYPE, Shape> Shape_Finder::define_shapes(vector<Shape> &all_shape
             if(big_difference()){
                 sample_shapes = ideal_shapes;
             }
-            calculate_case3(all_shapes);
-            if(!first_defined){
+            else
                 ideal_shapes = sample_shapes;
-                first_defined = true;
-            }
+
+            calculate_case3(all_shapes);
+
             result = sample_shapes;
             cout<<"3 shape"<<endl;
             break;
@@ -120,9 +120,9 @@ std::map<SHAPE_TYPE, Shape> Shape_Finder::define_shapes(vector<Shape> &all_shape
 bool Shape_Finder::big_difference(){
     for(auto it = ideal_shapes.begin(); it != ideal_shapes.end(); ++it){
         pair<SHAPE_TYPE, double> closest = closest_shape(it -> second);
-        if(closest.first != it->first) return true;
+        if(closest.first != it->first) return false;
     }
-    return false;
+    return true;
 }
 
 void Shape_Finder::calculate_case3(vector<Shape> &all_shapes){
@@ -179,6 +179,7 @@ pair<int, int> Shape_Finder:: min_diff(vector<vector<pair<bool, double>>> &diffs
             }
         }
     }
+    if(indexes.first == -1) throw 228;
     return indexes;
 };
 

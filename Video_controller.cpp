@@ -47,7 +47,7 @@ void Video_controller::start(bool show){
     bool bSuccess = cap.read(img_original);
     //
     cvtColor(img_original, img_original, COLOR_BGR2GRAY);
-    inRange(img_original, Scalar(228, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), img_original);
+    inRange(img_original, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), img_original);
     GaussianBlur(img_original, img_original, Size(5, 5), 0, 0);
 }
 
